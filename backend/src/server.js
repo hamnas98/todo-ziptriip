@@ -1,12 +1,11 @@
-const express = require("express");
+require('dotenv').config();
+const app = require('./app');
+const connectDB = require('./config/database');
 
-const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.get("/", (req, res) => {
-	res.send("Ziptrrip Todo API is alive");
-});
-
-app.listen(PORT, () => {
-	console.log(`Server running on port ${PORT}`);
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  });
 });
