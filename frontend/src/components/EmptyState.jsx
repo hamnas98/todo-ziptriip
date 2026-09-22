@@ -1,0 +1,9 @@
+const EmptyState = ({ message = "Nothing here yet." }) => {
+	return (
+		<div className="flex flex-col items-center justify-center py-16 text-gray-400">
+			<p>{message}</p>
+		</div>
+	);
+};
+
+export default EmptyState;
