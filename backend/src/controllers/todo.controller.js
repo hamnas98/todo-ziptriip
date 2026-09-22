@@ -3,7 +3,7 @@ const todoService = require("../services/todo.service");
 const createTodo = async (req, res, next) => {
 	try {
 		const { title, description } = req.body;
-    
+
 		const todo = await todoService.createTodo({ title, description });
 		res.status(201).json({ success: true, data: todo });
 	} catch (error) {
