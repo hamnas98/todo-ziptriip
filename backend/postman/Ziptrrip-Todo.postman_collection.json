@@ -1,0 +1,376 @@
+{
+	"info": {
+		"name": "Ziptrrip Todo API",
+		"description": "REST API for the Ziptrrip Todo technical assignment. Covers full CRUD, search, filtering, and validation/error scenarios.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000/api",
+			"type": "string"
+		},
+		{
+			"key": "todoId",
+			"value": "",
+			"type": "string",
+			"description": "Set automatically after creating a todo, via the test script on 'Create Todo'."
+		}
+	],
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "GET Health",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Todos - CRUD",
+			"item": [
+				{
+					"name": "Create Todo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const data = pm.response.json().data;",
+									"    pm.collectionVariables.set('todoId', data._id);",
+									"}",
+									"pm.test('Status is 201', () => pm.response.to.have.status(201));",
+									"pm.test('Response has success true', () => pm.expect(pm.response.json().success).to.be.true);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Learn Node.js\",\n  \"description\": \"Study backend concepts\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/todos",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos"]
+						}
+					}
+				},
+				{
+					"name": "Get All Todos",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/todos",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos"]
+						}
+					}
+				},
+				{
+					"name": "Get Todo By ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/todos/{{todoId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos", "{{todoId}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Todo",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Learn Node.js deeply\",\n  \"description\": \"Study advanced Node.js concepts\",\n  \"completed\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/todos/{{todoId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos", "{{todoId}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Todo",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/todos/{{todoId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos", "{{todoId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Search & Filter",
+			"item": [
+				{
+					"name": "Search by title",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/todos?search=node",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos"],
+							"query": [{ "key": "search", "value": "node" }]
+						},
+						"description": "Case-insensitive substring match on title. Returns todos containing 'node'."
+					}
+				},
+				{
+					"name": "Filter completed = true",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/todos?completed=true",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos"],
+							"query": [{ "key": "completed", "value": "true" }]
+						},
+						"description": "Returns only completed todos."
+					}
+				},
+				{
+					"name": "Filter completed = false",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/todos?completed=false",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos"],
+							"query": [{ "key": "completed", "value": "false" }]
+						},
+						"description": "Returns only incomplete todos."
+					}
+				},
+				{
+					"name": "Search + Filter combined",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/todos?search=node&completed=false",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos"],
+							"query": [
+								{ "key": "search", "value": "node" },
+								{ "key": "completed", "value": "false" }
+							]
+						},
+						"description": "Combines both filters with AND logic — matches title AND completion state."
+					}
+				}
+			]
+		},
+		{
+			"name": "Error Cases",
+			"item": [
+				{
+					"name": "Create - Missing Title",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 400', () => pm.response.to.have.status(400));",
+									"pm.test('Message is Title is required', () => pm.expect(pm.response.json().message).to.eql('Title is required'));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"No title provided\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/todos",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos"]
+						}
+					}
+				},
+				{
+					"name": "Create - Empty Title",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 400', () => pm.response.to.have.status(400));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"   \"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/todos",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos"]
+						}
+					}
+				},
+				{
+					"name": "Get - Invalid ID format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 400', () => pm.response.to.have.status(400));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/todos/not-a-real-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos", "not-a-real-id"]
+						}
+					}
+				},
+				{
+					"name": "Get - Valid ID, Not Found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 404', () => pm.response.to.have.status(404));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/todos/507f1f77bcf86cd799439011",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos", "507f1f77bcf86cd799439011"]
+						}
+					}
+				},
+				{
+					"name": "Update - Empty Title",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 400', () => pm.response.to.have.status(400));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/todos/{{todoId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos", "{{todoId}}"]
+						}
+					}
+				},
+				{
+					"name": "Update - Not Found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 404', () => pm.response.to.have.status(404));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"completed\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/todos/507f1f77bcf86cd799439011",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos", "507f1f77bcf86cd799439011"]
+						}
+					}
+				},
+				{
+					"name": "Delete - Not Found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status is 404', () => pm.response.to.have.status(404));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/todos/507f1f77bcf86cd799439011",
+							"host": ["{{baseUrl}}"],
+							"path": ["todos", "507f1f77bcf86cd799439011"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
